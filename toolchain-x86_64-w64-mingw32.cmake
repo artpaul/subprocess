@@ -12,7 +12,7 @@ SET(CMAKE_RANLIB x86_64-w64-mingw32-ranlib)
 SET(CMAKE_FIND_ROOT_PATH /usr/x86_64-w64-mingw32 /home/john/GIT/build-win64/8.2/inst)
 
 # adjust the default behaviour of the FIND_XXX() commands:
-# search headers and libraries in the target environment, search 
+# search headers and libraries in the target environment, search
 # programs in the host environment
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)

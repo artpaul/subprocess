@@ -33,9 +33,6 @@ if(MSVC)
     add_compile_options(-Zc:__cplusplus)
 endif()
 
-
-
-
 add_subdirectory(src/cpp subprocess)
 
 # TODO testing
