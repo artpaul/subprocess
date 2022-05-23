@@ -18,13 +18,12 @@ enum class PipeVarIndex {
   file
 };
 
-typedef std::variant<PipeOption,
-                     std::string,
-                     PipeHandle,
-                     std::istream*,
-                     std::ostream*,
-                     FILE*>
-  PipeVar;
+using PipeVar = std::variant<PipeOption,
+                             std::string,
+                             PipeHandle,
+                             std::istream*,
+                             std::ostream*,
+                             FILE*>;
 
 inline PipeOption get_pipe_option(const PipeVar& option) {
   PipeVarIndex index = static_cast<PipeVarIndex>(option.index());

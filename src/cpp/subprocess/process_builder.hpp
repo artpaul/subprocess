@@ -22,27 +22,34 @@ namespace subprocess {
 */
 
 struct RunOptions {
-  /** Set to true for subprocess::run() to throw exception. Ignored when
-      using Popen directly.
-  */
+  /**
+   * Set to true for subprocess::run() to throw exception. Ignored when
+   * using Popen directly.
+   */
   bool check = false;
-  /** Option for cin, data to pipe to cin.  or created handle to use.
 
-      if a pipe handle is used it will be made inheritable automatically
-      when process is created and closed on the parents end.
-  */
+  /**
+   * Option for cin, data to pipe to cin.  or created handle to use.
+   *
+   * if a pipe handle is used it will be made inheritable automatically
+   * when process is created and closed on the parents end.
+   */
   PipeVar cin = PipeOption::inherit;
-  /** Option for cout, or handle to use.
 
-      if a pipe handle is used it will be made inheritable automatically
-      when process is created and closed on the parents end.
-  */
+  /**
+   * Option for cout, or handle to use.
+   *
+   * if a pipe handle is used it will be made inheritable automatically
+   * when process is created and closed on the parents end.
+   */
   PipeVar cout = PipeOption::inherit;
-  /** Option for cout, or handle to use.
 
-      if a pipe handle is used it will be made inheritable automatically
-      when process is created and closed on the parents end.
-  */
+  /**
+   * Option for cout, or handle to use.
+   *
+   * if a pipe handle is used it will be made inheritable automatically
+   * when process is created and closed on the parents end.
+   */
   PipeVar cerr = PipeOption::inherit;
 
   /** Set to true to run as new process group */
@@ -50,25 +57,30 @@ struct RunOptions {
 
   /** current working directory for new process to use */
   std::string cwd;
+
   /** If empty inherits from current process */
   EnvMap env;
 
-  /** Timeout in seconds. Raise TimeoutExpired.
-
-      Only available if you use subprocess_run
-  */
+  /**
+   * Timeout in seconds. Raise TimeoutExpired.
+   *
+   * Only available if you use subprocess_run
+   */
   double timeout = -1;
 };
-class ProcessBuilder;
-/** Active running process.
 
-    Similar design of subprocess.Popen. In c++ I didn't like
-*/
+class ProcessBuilder;
+
+/**
+ * Active running process.
+ *
+ * Similar design of subprocess.Popen. In c++ I didn't like
+ */
 struct Popen {
 public:
   /** Initialized as empty and invalid */
-  Popen() {
-  }
+  Popen() = default;
+
   /** Starts command with specified options */
   Popen(CommandLine command, const RunOptions& options);
   /** Starts command with specified options */
@@ -175,11 +187,12 @@ private:
 #endif
 };
 
-/** This class does the bulk of the work for starting a process. It is the
-    most customizable and hence the most complex.
-
-    @note Undecided if this should be public API or private.
-*/
+/**
+ * This class does the bulk of the work for starting a process. It is the
+ * most customizable and hence the most complex.
+ *
+ * @note Undecided if this should be public API or private.
+ */
 class ProcessBuilder {
 public:
   std::vector<PipeHandle> child_close_pipes;
@@ -230,6 +243,7 @@ public:
     @return a CompletedProcess once the command has finished.
 */
 CompletedProcess run(Popen& popen, bool check = false);
+
 /** Run a command blocking until completion.
 
     see subprocess::run(Popen&,bool) for more details about exceptions.
@@ -246,8 +260,7 @@ struct RunBuilder {
   RunOptions options;
   CommandLine command;
 
-  RunBuilder() {
-  }
+  RunBuilder() = default;
   /** Constructs builder with cmd as command to run */
   RunBuilder(CommandLine cmd)
     : command(cmd) {
@@ -348,4 +361,5 @@ public:
 private:
   double mStart;
 };
+
 } // namespace subprocess

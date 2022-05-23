@@ -14,26 +14,30 @@
 #include <vector>
 
 namespace subprocess {
+
 // ssize_t is not a standard type and not supported in MSVC
-typedef intptr_t ssize_t;
+using ssize_t = intptr_t;
 
 #ifdef _WIN32
-/** True if on windows platform. This constant is useful so you can use
-    regular if statements instead of ifdefs and have both branches compile
-    therebye reducing chance of compiler error on a different platform.
-*/
+/**
+ * True if on windows platform. This constant is useful so you can use
+ * regular if statements instead of ifdefs and have both branches compile
+ * therebye reducing chance of compiler error on a different platform.
+ */
 constexpr bool kIsWin32 = true;
 #else
 constexpr bool kIsWin32 = false;
 #endif
+
 /*  windows doesnt'h have all of these. The numeric values I hope are
     standardized. Posix specifies the number in the standard so most
     systems should be fine.
 */
 
-/** Signals to send. they start with P because SIGX are macros, P
-    stands for Posix as these values are as defined by Posix.
-*/
+/**
+ * Signals to send. they start with P because SIGX are macros,
+ * P stands for Posix as these values are as defined by Posix.
+ */
 enum SigNum {
   PSIGHUP = 1,
   PSIGINT = SIGINT,
@@ -66,22 +70,29 @@ enum SigNum {
   PSIGWINCH = 28,
   PSIGIO = 29
 };
+
 #ifndef _WIN32
-typedef int PipeHandle;
-typedef ::pid_t pid_t;
+
+using PipeHandle = int;
+using pid_t = ::pid_t;
 
 /** The path seperator for PATH environment variable. */
 constexpr char kPathDelimiter = ':';
+
 // to please windows we can't have this be a constexpr and be standard c++
 /** The value representing an invalid pipe */
 const PipeHandle kBadPipeValue = (PipeHandle)-1;
+
 #else
-typedef HANDLE PipeHandle;
-typedef DWORD pid_t;
+
+using PipeHandle = HANDLE;
+using pid_t = DWORD;
 
 constexpr char kPathDelimiter = ';';
 const PipeHandle kBadPipeValue = INVALID_HANDLE_VALUE;
+
 #endif
+
 constexpr int kStdInValue = 0;
 constexpr int kStdOutValue = 1;
 constexpr int kStdErrValue = 2;
@@ -89,8 +100,8 @@ constexpr int kStdErrValue = 2;
 /** The value representing an invalid exit code possible for a process. */
 constexpr int kBadReturnCode = -1000;
 
-typedef std::vector<std::string> CommandLine;
-typedef std::map<std::string, std::string> EnvMap;
+using CommandLine = std::vector<std::string>;
+using EnvMap = std::map<std::string, std::string>;
 
 /** Redirect destination */
 enum class PipeOption : int {
@@ -165,7 +176,8 @@ struct CompletedProcess {
   std::string cout;
   /** Captured stderr */
   std::string cerr;
-  explicit operator bool() const {
+
+  explicit operator bool() const noexcept {
     return returncode == 0;
   }
 };

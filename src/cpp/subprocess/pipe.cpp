@@ -10,6 +10,7 @@
 using namespace subprocess::details;
 
 namespace subprocess {
+
 PipePair& PipePair::operator=(PipePair&& other) {
   close();
   const_cast<PipeHandle&>(input) = other.input;
@@ -17,6 +18,7 @@ PipePair& PipePair::operator=(PipePair&& other) {
   other.disown();
   return *this;
 }
+
 void PipePair::close() {
   if (input != kBadPipeValue)
     pipe_close(input);
@@ -24,18 +26,21 @@ void PipePair::close() {
     pipe_close(output);
   disown();
 }
+
 void PipePair::close_input() {
   if (input != kBadPipeValue) {
     pipe_close(input);
     const_cast<PipeHandle&>(input) = kBadPipeValue;
   }
 }
+
 void PipePair::close_output() {
   if (output != kBadPipeValue) {
     pipe_close(output);
     const_cast<PipeHandle&>(output) = kBadPipeValue;
   }
 }
+
 #ifdef _WIN32
 void pipe_set_inheritable(subprocess::PipeHandle handle, bool inheritable) {
   if (handle == kBadPipeValue)
@@ -93,6 +98,7 @@ void pipe_set_inheritable(PipeHandle handle, bool inherits) {
   if (result < -1)
     throw_os_error("fcntl", errno);
 }
+
 bool pipe_close(PipeHandle handle) {
   if (handle == kBadPipeValue)
     return false;

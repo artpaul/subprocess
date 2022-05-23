@@ -6,6 +6,7 @@ namespace subprocess {
 
 /** Get the value of environment variable */
 std::string getenv(const std::string& var);
+
 /** Searches for program in PATH environment variable.
 
     on windows tries adding suffixes specified in PATHEXT environment
@@ -15,6 +16,7 @@ std::string getenv(const std::string& var);
     and inspect their version to find an executable that offers python 3.x.
 */
 std::string find_program(const std::string& name);
+
 /** Clears cache used by find_program.
 
     find_program uses internal cache to find executables. If you modify PATH
@@ -24,11 +26,13 @@ std::string find_program(const std::string& name);
     expected instead of the old program being returned.
 */
 void find_program_clear_cache();
+
 /** Escapes the argument suitable for use on command line. */
 std::string escape_shell_arg(std::string arg);
 
 /** Gets the current working directory of the process */
 std::string getcwd();
+
 /** Sets the current working directory of process. */
 void setcwd(const std::string& path);
 

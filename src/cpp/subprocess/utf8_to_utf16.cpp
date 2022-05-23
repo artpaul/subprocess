@@ -1,13 +1,12 @@
 #include "utf8_to_utf16.hpp"
 
+#include <cassert>
 #include <codecvt>
 #include <locale>
 
 #ifdef _WIN32
 # include <windows.h>
 #endif
-
-#include <assert.h>
 
 namespace subprocess {
 

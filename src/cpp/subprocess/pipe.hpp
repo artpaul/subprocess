@@ -3,21 +3,25 @@
 #include "basic_types.hpp"
 
 namespace subprocess {
-/*  You might be wondering why the C-like API. I played around with a more
-    C++ like API but it gets hairy quite fast trying to support all the
-    possible use-cases. My opinion is to simply roll a RAII class for
-    when you need it that is specific to your needs. 1, or a set of RAII
-    classes is too complex.
-*/
+
+/*
+ * You might be wondering why the C-like API. I played around with a more
+ * C++ like API but it gets hairy quite fast trying to support all the
+ * possible use-cases. My opinion is to simply roll a RAII class for
+ * when you need it that is specific to your needs. 1, or a set of RAII
+ * classes is too complex.
+ */
 struct PipePair {
-  PipePair(){};
+  PipePair() = default;
   PipePair(PipeHandle input, PipeHandle output)
     : input(input)
     , output(output) {
   }
+
   ~PipePair() {
     close();
   }
+
   // No copy, move only
   PipePair(const PipePair&) = delete;
   PipePair& operator=(const PipePair&) = delete;
@@ -90,4 +94,5 @@ void pipe_ignore_and_close(PipeHandle handle);
             with binary data.
 */
 std::string pipe_read_all(PipeHandle handle);
+
 } // namespace subprocess

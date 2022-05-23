@@ -1,12 +1,11 @@
 #ifndef _WIN32
+# include "environ.hpp"
 # include "process_builder.hpp"
 
 # include <cstring>
 # include <errno.h>
 # include <mutex>
 # include <spawn.h>
-
-# include "environ.hpp"
 
 extern "C" char** environ;
 
@@ -82,7 +81,6 @@ struct FileActions {
   posix_spawn_file_actions_t actions;
 };
 
-# ifndef _WIN32
 Popen ProcessBuilder::run_command(const CommandLine& command) {
   if (command.empty()) {
     throw std::invalid_argument("command should not be empty");
@@ -195,17 +193,17 @@ Popen ProcessBuilder::run_command(const CommandLine& command) {
     }
     posix_spawnattr_t* attributes;
   } attributes_raii(attributes);
-#  if 0
+# if 0
         // I can't think of a nice way to make this configurable.
         posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETSIGMASK);
         sigset_t signal_mask;
         sigemptyset(&signal_mask);
         posix_spawnattr_setsigmask(&attributes, &signal_mask);
-#  endif
+# endif
   int flags = this->new_process_group ? POSIX_SPAWN_SETSIGMASK : 0;
-#  ifdef POSIX_SPAWN_USEVFORK
+# ifdef POSIX_SPAWN_USEVFORK
   flags |= POSIX_SPAWN_USEVFORK;
-#  endif
+# endif
   attributes_raii.setflags(flags);
   {
     /*  I should have gone with vfork() :(
@@ -240,6 +238,5 @@ Popen ProcessBuilder::run_command(const CommandLine& command) {
   return process;
 }
 
-# endif
 } // namespace subprocess
 #endif
