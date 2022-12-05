@@ -126,7 +126,13 @@ Popen ProcessBuilder::run_command(const CommandLine& command) {
   if (this->new_process_group) {
     process_flags |= CREATE_NEW_PROCESS_GROUP;
   }
-
+  if (this->debug) {
+    process_flags |= DEBUG_PROCESS;
+  }
+  if (this->detached) {
+    process_flags |= DETACHED_PROCESS;
+  }
+  bool inherit_handles = !this->detached;
   process.cwd = this->cwd;
   // Create the child process.
 # if _WIN64
@@ -136,7 +142,7 @@ Popen ProcessBuilder::run_command(const CommandLine& command) {
     (LPWSTR)cmd_args.data(), // command line
     NULL, // process security attributes
     NULL, // primary thread security attributes
-    TRUE, // handles are inherited
+    inherit_handles, // inherit handles or not
     process_flags, // creation flags
     env, // environment
     (LPCWSTR)(this->cwd.empty() ? nullptr
@@ -151,7 +157,7 @@ Popen ProcessBuilder::run_command(const CommandLine& command) {
     (LPSTR)cmd_args.data(), // command line
     NULL, // process security attributes
     NULL, // primary thread security attributes
-    TRUE, // handles are inherited
+    inherit_handles, // inherit handles or not
     process_flags, // creation flags
     env, // environment
     (LPCSTR)(this->cwd.empty()

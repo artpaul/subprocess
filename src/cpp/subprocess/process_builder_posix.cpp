@@ -204,6 +204,9 @@ Popen ProcessBuilder::run_command(const CommandLine& command) {
 # ifdef POSIX_SPAWN_USEVFORK
   flags |= POSIX_SPAWN_USEVFORK;
 # endif
+  if (this->detached) {
+    flags |= POSIX_SPAWN_SETSID;
+  }
   attributes_raii.setflags(flags);
   {
     /*  I should have gone with vfork() :(
