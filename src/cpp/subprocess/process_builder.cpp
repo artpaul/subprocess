@@ -22,21 +22,25 @@
 #include "shell_utils.hpp"
 #include "utf8_to_utf16.hpp"
 
-using std::nullptr_t;
-
 // TODO: throw exceptions on various os errors.
 
 namespace subprocess {
 namespace details {
+
 void throw_os_error(const char* function, int errno_code) {
-  if (errno_code == 0)
+  if (errno_code == 0) {
     return;
+  }
   std::string message = function;
-  message += " failed: " + std::to_string(errno) + ": ";
-  message += std::strerror(errno_code);
+  message.append(" failed: ");
+  message.append(std::to_string(errno));
+  message.append(": ");
+  message.append(std::strerror(errno_code));
   throw OSError(message);
 }
+
 } // namespace details
+
 double monotonic_seconds() {
   static bool needs_init = true;
   static std::chrono::steady_clock::time_point begin;
@@ -81,6 +85,7 @@ struct AutoClosePipe {
 private:
   PipeHandle mHandle;
 };
+
 void pipe_thread(PipeHandle input, std::ostream* output) {
   std::thread thread([=]() {
     std::vector<char> buffer(2048);
@@ -106,6 +111,7 @@ void pipe_thread(PipeHandle input, FILE* output) {
   });
   thread.detach();
 }
+
 void pipe_thread(FILE* input, PipeHandle output, bool bautoclose) {
   std::thread thread([=]() {
     AutoClosePipe autoclose(output, bautoclose);
@@ -119,6 +125,7 @@ void pipe_thread(FILE* input, PipeHandle output, bool bautoclose) {
   });
   thread.detach();
 }
+
 void pipe_thread(std::string& input, PipeHandle output, bool bautoclose) {
   std::thread thread([input(move(input)), output, bautoclose]() {
     AutoClosePipe autoclose(output, bautoclose);
@@ -134,6 +141,7 @@ void pipe_thread(std::string& input, PipeHandle output, bool bautoclose) {
   });
   thread.detach();
 }
+
 void pipe_thread(std::istream* input, PipeHandle output, bool bautoclose) {
   std::thread thread([=]() {
     AutoClosePipe autoclose(output, bautoclose);
@@ -153,6 +161,7 @@ void pipe_thread(std::istream* input, PipeHandle output, bool bautoclose) {
   });
   thread.detach();
 }
+
 void setup_redirect_stream(PipeHandle input, PipeVar& output) {
   PipeVarIndex index = static_cast<PipeVarIndex>(output.index());
 
@@ -193,6 +202,7 @@ bool setup_redirect_stream(PipeVar& input, PipeHandle output) {
   }
   return false;
 }
+
 Popen::Popen(CommandLine command, const RunOptions& optionsIn) {
   // we have to make a copy because of const
   RunOptions options = optionsIn;
@@ -203,6 +213,7 @@ Popen::Popen(CommandLine command, RunOptions&& optionsIn) {
   RunOptions options = std::move(optionsIn);
   init(command, options);
 }
+
 void Popen::init(CommandLine& command, RunOptions& options) {
   ProcessBuilder builder;
 
@@ -263,7 +274,6 @@ Popen& Popen::operator=(Popen&& other) {
   other.cout = kBadPipeValue;
   other.cerr = kBadPipeValue;
   other.cin_is_autoclosed = false;
-  other.detached = false;
   other.pid = 0;
   other.returncode = -1000;
   return *this;
@@ -296,6 +306,7 @@ void Popen::close() {
   returncode = kBadReturnCode;
   args.clear();
 }
+
 #ifdef _WIN32
 std::string lastErrorString() {
   LPTSTR lpMsgBuf = nullptr;
@@ -406,6 +417,7 @@ bool Popen::poll() {
   }
   return child > 0;
 }
+
 int Popen::wait(double timeout) {
   if (returncode != kBadReturnCode)
     return returncode;
@@ -441,14 +453,17 @@ int Popen::wait(double timeout) {
 }
 
 bool Popen::send_signal(int signum) {
-  if (returncode != kBadReturnCode)
+  if (returncode != kBadReturnCode){
     return false;
+  }
   return ::kill(pid, signum) == 0;
 }
 #endif
+
 bool Popen::terminate() {
   return send_signal(PSIGTERM);
 }
+
 bool Popen::kill() {
   return send_signal(PSIGKILL);
 }
@@ -460,6 +475,7 @@ std::string ProcessBuilder::windows_command() {
 std::string ProcessBuilder::windows_args() {
   return this->windows_args(this->command);
 }
+
 std::string ProcessBuilder::windows_args(const CommandLine& command) {
   std::string args;
   for (unsigned int i = 0; i < command.size(); ++i) {
@@ -505,7 +521,7 @@ CompletedProcess run(Popen& popen, bool check) {
   popen.wait();
   completed.returncode = popen.returncode;
   completed.args = CommandLine(popen.args.begin() + 1, popen.args.end());
-  if (check) {
+  if (check && completed.returncode != 0) {
     CalledProcessError error("failed to execute " + popen.args[0]);
     error.cmd = popen.args;
     error.returncode = completed.returncode;

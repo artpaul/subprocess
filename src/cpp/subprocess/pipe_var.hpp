@@ -33,7 +33,6 @@ inline PipeOption get_pipe_option(const PipeVar& option) {
       return std::get<PipeOption>(option);
     case PipeVarIndex::handle:
       return PipeOption::specific;
-
     default:
       return PipeOption::pipe;
   }

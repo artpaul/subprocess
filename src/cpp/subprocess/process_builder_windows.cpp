@@ -1,15 +1,14 @@
-#ifdef _WIN32
 // because of how different it is, windows gets it's own file
-# include "process_builder.hpp"
+#include "process_builder.hpp"
 
-# include <stdio.h>
-# include <strsafe.h>
-# include <tchar.h>
-# include <windows.h>
+#include <stdio.h>
+#include <strsafe.h>
+#include <tchar.h>
+#include <windows.h>
 
-# include "environ.hpp"
-# include "shell_utils.hpp"
-# include "utf8_to_utf16.hpp"
+#include "environ.hpp"
+#include "shell_utils.hpp"
+#include "utf8_to_utf16.hpp"
 
 static STARTUPINFO g_startupInfo;
 static bool g_startupInfoInit = false;
@@ -135,7 +134,7 @@ Popen ProcessBuilder::run_command(const CommandLine& command) {
   bool inherit_handles = !this->detached;
   process.cwd = this->cwd;
   // Create the child process.
-# if _WIN64
+#if _WIN64
   std::u16string cmd_args{utf8_to_utf16(args)};
   bSuccess = CreateProcess(
     (LPCWSTR)utf8_to_utf16(program).c_str(),
@@ -150,7 +149,7 @@ Popen ProcessBuilder::run_command(const CommandLine& command) {
                                     .c_str()), // use parent's current directory
     &siStartInfo, // STARTUPINFO pointer
     &process.process_info); // receives PROCESS_INFORMATION
-# else
+#else
   std::string cmd_args{args};
   bSuccess = CreateProcess(
     (LPCSTR)program.c_str(),
@@ -169,7 +168,7 @@ Popen ProcessBuilder::run_command(const CommandLine& command) {
   LPCSTR cwd = this->cwd.empty() ? nullptr : (LPCSTR)this->cwd.c_str();
   LPCSTR program_arg = (LPCSTR)program.c_str();
   LPSTR cmd_args = (LPSTR)args.c_str(); // command line
-# endif
+#endif
   process.pid = process.process_info.dwProcessId;
   if (cin_pair)
     cin_pair.close_input();
@@ -197,5 +196,3 @@ Popen ProcessBuilder::run_command(const CommandLine& command) {
 }
 
 } // namespace subprocess
-
-#endif

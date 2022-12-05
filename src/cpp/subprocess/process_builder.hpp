@@ -273,11 +273,11 @@ struct RunBuilder {
 
   RunBuilder() = default;
   /** Constructs builder with cmd as command to run */
-  RunBuilder(CommandLine cmd)
-    : command(cmd) {
+  explicit RunBuilder(CommandLine cmd)
+    : command(std::move(cmd)) {
   }
   /** Constructs builder with command to run */
-  RunBuilder(std::initializer_list<std::string> command)
+  explicit RunBuilder(std::initializer_list<std::string> command)
     : command(command) {
   }
   /** Only for run(), throws exception if command returns non-zero exit code */

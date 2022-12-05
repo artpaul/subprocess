@@ -1,18 +1,14 @@
-#ifndef _WIN32
-# include "environ.hpp"
-# include "process_builder.hpp"
+#include "environ.hpp"
+#include "process_builder.hpp"
 
-# include <cstring>
-# include <errno.h>
-# include <mutex>
-# include <spawn.h>
+#include <cstring>
+#include <errno.h>
+#include <mutex>
+#include <spawn.h>
 
 extern "C" char** environ;
 
-using std::nullptr_t;
-
-using namespace subprocess::details;
-
+namespace subprocess {
 namespace {
 
 struct cstring_vector {
@@ -55,24 +51,23 @@ struct cstring_vector {
 
 } // namespace
 
-namespace subprocess {
 struct FileActions {
   FileActions() {
     int result = posix_spawn_file_actions_init(&actions);
-    throw_os_error("posix_spawn_file_actions_init", result);
+    details::throw_os_error("posix_spawn_file_actions_init", result);
   }
   ~FileActions() {
     int result = posix_spawn_file_actions_destroy(&actions);
-    throw_os_error("posix_spawn_file_actions_destroy", result);
+    details::throw_os_error("posix_spawn_file_actions_destroy", result);
   }
 
   void adddup2(int fd, int newfd) {
     int result = posix_spawn_file_actions_adddup2(&actions, fd, newfd);
-    throw_os_error("posix_spawn_file_actions_adddup2", result);
+    details::throw_os_error("posix_spawn_file_actions_adddup2", result);
   }
   void addclose(int fd) {
     int result = posix_spawn_file_actions_addclose(&actions, fd);
-    throw_os_error("posix_spawn_file_actions_addclose", result);
+    details::throw_os_error("posix_spawn_file_actions_addclose", result);
   }
 
   posix_spawn_file_actions_t* get() {
@@ -184,26 +179,26 @@ Popen ProcessBuilder::run_command(const CommandLine& command) {
     }
     ~SpawnAttr() {
       int ret = posix_spawnattr_destroy(attributes);
-      throw_os_error("posix_spawnattr_destroy", ret);
+      details::throw_os_error("posix_spawnattr_destroy", ret);
     }
 
     void setflags(short flags) {
       int ret = posix_spawnattr_setflags(attributes, flags);
-      throw_os_error("posix_spawnattr_setflags", ret);
+      details::throw_os_error("posix_spawnattr_setflags", ret);
     }
     posix_spawnattr_t* attributes;
   } attributes_raii(attributes);
-# if 0
+#if 0
         // I can't think of a nice way to make this configurable.
         posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETSIGMASK);
         sigset_t signal_mask;
         sigemptyset(&signal_mask);
         posix_spawnattr_setsigmask(&attributes, &signal_mask);
-# endif
+#endif
   int flags = this->new_process_group ? POSIX_SPAWN_SETSIGMASK : 0;
-# ifdef POSIX_SPAWN_USEVFORK
+#ifdef POSIX_SPAWN_USEVFORK
   flags |= POSIX_SPAWN_USEVFORK;
-# endif
+#endif
   if (this->detached) {
     flags |= POSIX_SPAWN_SETSID;
   }
@@ -242,4 +237,3 @@ Popen ProcessBuilder::run_command(const CommandLine& command) {
 }
 
 } // namespace subprocess
-#endif

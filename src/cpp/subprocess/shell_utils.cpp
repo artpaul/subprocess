@@ -22,6 +22,7 @@
 #include <mutex>
 #include <sstream>
 #include <stdlib.h>
+#include <unordered_map>
 
 using std::isspace;
 
@@ -172,13 +173,12 @@ std::string try_exe(std::string path) {
 }
 
 static std::mutex g_program_cache_mutex;
-static std::map<std::string, std::string> g_program_cache;
+static std::unordered_map<std::string, std::string> g_program_cache;
 
 static std::string find_program_in_path(const std::string& name) {
   // because of the cache variable is static we do this to be thread safe
   std::unique_lock lock(g_program_cache_mutex);
 
-  std::map<std::string, std::string>& cache = g_program_cache;
   if (name.empty())
     return "";
   if (name.size() >= 2) {
@@ -197,9 +197,10 @@ static std::string find_program_in_path(const std::string& name) {
     }
   }
 
-  std::map<std::string, std::string>::iterator it = cache.find(name);
-  if (it != cache.end())
+  auto it = g_program_cache.find(name);
+  if (it != g_program_cache.end()) {
     return it->second;
+  }
 
   std::string path_env = getenv("PATH");
   for (std::string test : split(path_env, kPathDelimiter)) {
@@ -209,7 +210,7 @@ static std::string find_program_in_path(const std::string& name) {
     test += name;
     test = try_exe(test);
     if (!test.empty() && is_file(test)) {
-      cache[name] = test;
+      g_program_cache[name] = test;
       return test;
     }
   }

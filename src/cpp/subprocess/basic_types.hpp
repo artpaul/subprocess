@@ -105,15 +105,19 @@ using EnvMap = std::map<std::string, std::string>;
 
 /** Redirect destination */
 enum class PipeOption : int {
-  inherit, ///< Inherits current process handle
-  cout, ///< Redirects to stdout
-  cerr, ///< redirects to stderr
-  /** Redirects to provided pipe. You can open /dev/null. Pipe handle
-      that you specify will be made inheritable and closed automatically.
-  */
+  /// Inherits current process handle.
+  inherit,
+  /// Redirects to stdout.
+  cout,
+  /// Redirects to stderr.
+  cerr,
+  /// Redirects to provided pipe. You can open /dev/null. Pipe handle
+  /// that you specify will be made inheritable and closed automatically.
   specific,
-  pipe, ///< Redirects to a new handle created for you.
-  close ///< Troll the child by providing a closed pipe.
+  /// Redirects to a new handle created for you.
+  pipe,
+  /// Troll the child by providing a closed pipe.
+  close,
 };
 
 struct SubprocessError : std::runtime_error {
@@ -186,6 +190,5 @@ namespace details {
 
 void throw_os_error(const char* function, int errno_code);
 
-}
-
+} // namespace details
 } // namespace subprocess

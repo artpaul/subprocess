@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace subprocess {
+
 class EnvironSetter {
 public:
   EnvironSetter(const std::string& name);
