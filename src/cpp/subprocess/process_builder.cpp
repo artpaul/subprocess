@@ -172,25 +172,26 @@ void setup_redirect_stream(PipeHandle input, PipeVar& output) {
   }
 }
 
-void setup_redirect_stream(PipeVar& input, PipeHandle output) {
+bool setup_redirect_stream(PipeVar& input, PipeHandle output) {
   PipeVarIndex index = static_cast<PipeVarIndex>(input.index());
 
   switch (index) {
     case PipeVarIndex::handle:
     case PipeVarIndex::option:
-      return;
+      break;
     case PipeVarIndex::string:
       pipe_thread(std::get<std::string>(input), output, true);
-      break;
+      return true;
     case PipeVarIndex::istream:
       pipe_thread(std::get<std::istream*>(input), output, true);
-      break;
+      return true;
     case PipeVarIndex::ostream:
       throw std::domain_error("reading from std::ostream doesn't make sense");
     case PipeVarIndex::file:
       pipe_thread(std::get<FILE*>(input), output, true);
-      break;
+      return true;
   }
+  return false;
 }
 Popen::Popen(CommandLine command, const RunOptions& optionsIn) {
   // we have to make a copy because of const
@@ -226,12 +227,14 @@ void Popen::init(CommandLine& command, RunOptions& options) {
   }
 
   builder.new_process_group = options.new_process_group;
+  builder.detached = options.detached;
+  builder.debug = options.debug;
   builder.env = options.env;
   builder.cwd = options.cwd;
 
   *this = builder.run_command(command);
 
-  setup_redirect_stream(options.cin, cin);
+  cin_is_autoclosed = setup_redirect_stream(options.cin, cin);
   setup_redirect_stream(cout, options.cout);
   setup_redirect_stream(cerr, options.cerr);
 }
@@ -245,6 +248,7 @@ Popen& Popen::operator=(Popen&& other) {
   cin = other.cin;
   cout = other.cout;
   cerr = other.cerr;
+  cin_is_autoclosed = other.cin_is_autoclosed;
 
   pid = other.pid;
   returncode = other.returncode;
@@ -258,6 +262,8 @@ Popen& Popen::operator=(Popen&& other) {
   other.cin = kBadPipeValue;
   other.cout = kBadPipeValue;
   other.cerr = kBadPipeValue;
+  other.cin_is_autoclosed = false;
+  other.detached = false;
   other.pid = 0;
   other.returncode = -1000;
   return *this;
@@ -267,6 +273,7 @@ Popen::~Popen() {
   close();
 }
 void Popen::close() {
+  close_cin();
   if (cin != kBadPipeValue)
     pipe_close(cin);
   if (cout != kBadPipeValue)
@@ -274,6 +281,7 @@ void Popen::close() {
   if (cerr != kBadPipeValue)
     pipe_close(cerr);
   cin = cout = cerr = kBadPipeValue;
+  cin_is_autoclosed = false;
 
   // do this to not have zombie processes.
   if (pid) {

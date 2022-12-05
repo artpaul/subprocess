@@ -55,6 +55,9 @@ struct RunOptions {
   /** Set to true to run as new process group */
   bool new_process_group = false;
 
+  /** Set to true to detach process from parent's console */
+  bool detached = false;
+
   /** current working directory for new process to use */
   std::string cwd;
 
@@ -67,6 +70,9 @@ struct RunOptions {
    * Only available if you use subprocess_run
    */
   double timeout = -1;
+
+  /** Debug mode (Windows only) */
+  bool debug = false;
 };
 
 class ProcessBuilder;
@@ -173,7 +179,9 @@ public:
   /** Closes the cin pipe */
   void close_cin() {
     if (cin != kBadPipeValue) {
-      pipe_close(cin);
+      if (!cin_is_autoclosed) {
+        pipe_close(cin);
+      }
       cin = kBadPipeValue;
     }
   }
@@ -185,6 +193,7 @@ private:
 #ifdef _WIN32
   PROCESS_INFORMATION process_info;
 #endif
+  bool cin_is_autoclosed = false;
 };
 
 /**
@@ -206,6 +215,8 @@ public:
   PipeOption cerr_option = PipeOption::inherit;
 
   bool new_process_group = false;
+  bool debug = false;
+  bool detached = false;
   /** If empty inherits from current process */
   EnvMap env;
   std::string cwd;
@@ -315,6 +326,19 @@ struct RunBuilder {
     options.new_process_group = new_group;
     return *this;
   }
+  RunBuilder& debug(bool debug) {
+    options.debug = debug;
+    return *this;
+  }
+  /** Set to true to detach process from parent's console.
+      On windows it adds DETACHED_PROCESS creation flag.
+      On unix it adds POSIX_SPAWN_SETSID flag, to create new session.
+   */
+  RunBuilder& detached(bool run_detached) {
+    options.detached = run_detached;
+    return *this;
+  }
+
   operator RunOptions() const {
     return options;
   }
