@@ -52,7 +52,7 @@ void pipe_set_inheritable(subprocess::PipeHandle handle, bool inheritable) {
     throw OSError("SetHandleInformation failed");
   }
 }
-bool pipe_close(PipeHandle handle) {
+bool pipe_close(PipeHandle handle) noexcept {
   return !!CloseHandle(handle);
 }
 PipePair pipe_create(bool inheritable) {
@@ -67,7 +67,7 @@ PipePair pipe_create(bool inheritable) {
   }
   return {input, output};
 }
-ssize_t pipe_read(PipeHandle handle, void* buffer, std::size_t size) {
+ssize_t pipe_read(PipeHandle handle, void* buffer, std::size_t size) noexcept {
   DWORD bread = 0;
   bool result = ReadFile(handle, buffer, (DWORD)size, &bread, nullptr);
   if (result)
@@ -75,7 +75,9 @@ ssize_t pipe_read(PipeHandle handle, void* buffer, std::size_t size) {
   return -1;
 }
 
-ssize_t pipe_write(PipeHandle handle, const void* buffer, size_t size) {
+ssize_t pipe_write(PipeHandle handle,
+                   const void* buffer,
+                   size_t size) noexcept {
   DWORD written = 0;
   bool result = WriteFile(handle, buffer, (DWORD)size, &written, nullptr);
   if (result)
@@ -99,7 +101,7 @@ void pipe_set_inheritable(PipeHandle handle, bool inherits) {
     throw_os_error("fcntl", errno);
 }
 
-bool pipe_close(PipeHandle handle) {
+bool pipe_close(PipeHandle handle) noexcept {
   if (handle == kBadPipeValue)
     return false;
   return ::close(handle) == 0;
@@ -119,11 +121,13 @@ PipePair pipe_create(bool inheritable) {
   return {fd[0], fd[1]};
 }
 
-ssize_t pipe_read(PipeHandle handle, void* buffer, size_t size) {
+ssize_t pipe_read(PipeHandle handle, void* buffer, size_t size) noexcept {
   return ::read(handle, buffer, size);
 }
 
-ssize_t pipe_write(PipeHandle handle, const void* buffer, size_t size) {
+ssize_t pipe_write(PipeHandle handle,
+                   const void* buffer,
+                   size_t size) noexcept {
   return ::write(handle, buffer, size);
 }
 #endif

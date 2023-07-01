@@ -49,21 +49,26 @@ struct PipePair {
   }
 };
 
-/** Closes a pipe handle.
-    @param handle   The handle to close.
-    @returns true on success
-*/
-bool pipe_close(PipeHandle handle);
-/** Creates a pair of pipes for input/output
+/**
+ *  Closes a pipe handle.
+ *
+ * @param handle   The handle to close.
+ * @returns true on success
+ */
+bool pipe_close(PipeHandle handle) noexcept;
 
-    @param inheritable  if true subprocesses will inherit the pipe.
-
-    @throw OSError if system call fails.
-
-    @return pipe pair. If failure returned pipes will have values of
-   kBadPipeValue
-*/
+/**
+ * Creates a pair of pipes for input/output
+ *
+ * @param inheritable  if true subprocesses will inherit the pipe.
+ *
+ * @throw OSError if system call fails.
+ *
+ * @return pipe pair. If failure returned pipes will have values of
+ * kBadPipeValue
+ */
 PipePair pipe_create(bool inheritable = true);
+
 /** Set the pipe to be inheritable or not for subprocess.
 
     @throw OSError if system call fails.
@@ -76,16 +81,20 @@ void pipe_set_inheritable(PipeHandle handle, bool inheritable);
     @returns    -1 on error. if 0 it could be the end, or perhaps wait for
                 more data.
 */
-ssize_t pipe_read(PipeHandle, void* buffer, size_t size);
+ssize_t pipe_read(PipeHandle, void* buffer, size_t size) noexcept;
+
 /**
     @returns    -1 on error. if 0 it could be full, or perhaps wait for
                 more data.
 */
-ssize_t pipe_write(PipeHandle, const void* buffer, size_t size);
-/** Spawns a thread to read from the pipe. When no more data available
-    pipe will be closed.
-*/
+ssize_t pipe_write(PipeHandle, const void* buffer, size_t size) noexcept;
+
+/**
+ * Spawns a thread to read from the pipe. When no more data available
+ * pipe will be closed.
+ */
 void pipe_ignore_and_close(PipeHandle handle);
+
 /** Read contents of handle until no more data is available.
 
     If the pipe is non-blocking this will end prematurely.
